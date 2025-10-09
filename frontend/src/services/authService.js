@@ -1,7 +1,14 @@
-const BASE_URL = "http://localhost:3001/api"; // Replace with your actual backend URL
+import API_BASE_URL, { setAuthToken, removeAuthToken } from './apiConfig.js';
 
+/**
+ * Login user
+ * @route POST /api/v1/auth/login
+ * @access Public
+ * @param {string} email - User email
+ * @param {string} password - User password
+ */
 export const login = async (email, password) => {
-  const response = await fetch(`${BASE_URL}/auth/login`, {
+  const response = await fetch(`${API_BASE_URL}/auth/login`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -15,11 +22,25 @@ export const login = async (email, password) => {
   }
 
   const data = await response.json();
+  
+  // Store the token if it exists
+  if (data.token) {
+    setAuthToken(data.token);
+  }
+  
   return data;
 };
 
+/**
+ * Signup new user
+ * @route POST /api/v1/auth/signup
+ * @access Public
+ * @param {string} name - User name
+ * @param {string} email - User email
+ * @param {string} password - User password
+ */
 export const signup = async (name, email, password) => {
-  const response = await fetch(`${BASE_URL}/auth/signup`, {
+  const response = await fetch(`${API_BASE_URL}/auth/signup`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
@@ -33,5 +54,18 @@ export const signup = async (name, email, password) => {
   }
 
   const data = await response.json();
+  
+  // Store the token if it exists
+  if (data.token) {
+    setAuthToken(data.token);
+  }
+  
   return data;
+};
+
+/**
+ * Logout user
+ */
+export const logout = () => {
+  removeAuthToken();
 };

@@ -1,49 +1,52 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import MainPage from './pages/MainPage';
+import LoginPage from './pages/LoginPage';
+import SignupPage from './pages/SignupPage';
+import { getAuthToken, removeAuthToken } from './services/apiConfig';
+import { logout } from './services/authService';
 
 function App() {
   const [user, setUser] = useState(null);
   const [showLogin, setShowLogin] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
-  // Mock user for development
-  const mockUser = {
-    name: 'Dev User',
-    email: 'dev@example.com',
-  };
-
-  // To skip login, we can directly render MainPage with a mock user.
-  // The original logic is commented out below.
-  return <MainPage user={mockUser} onLogout={() => alert('Logout clicked!')} />;
-
-  /*
+  // Check if user is authenticated on mount
   useEffect(() => {
-    const token = localStorage.getItem('authToken');
+    const token = getAuthToken();
     const userData = localStorage.getItem('user');
     if (token && userData) {
-      setUser(JSON.parse(userData));
+      try {
+        setUser(JSON.parse(userData));
+        setIsAuthenticated(true);
+      } catch (err) {
+        console.error('Error parsing user data:', err);
+        removeAuthToken();
+        localStorage.removeItem('user');
+      }
     }
   }, []);
 
   const handleLoginSuccess = (userData) => {
-    localStorage.setItem('authToken', userData.token);
     localStorage.setItem('user', JSON.stringify(userData.user));
     setUser(userData.user);
+    setIsAuthenticated(true);
   };
 
   const handleSignupSuccess = (userData) => {
-    localStorage.setItem('authToken', userData.token);
     localStorage.setItem('user', JSON.stringify(userData.user));
     setUser(userData.user);
+    setIsAuthenticated(true);
   };
 
   const handleLogout = () => {
-    localStorage.removeItem('authToken');
+    logout();
     localStorage.removeItem('user');
     setUser(null);
+    setIsAuthenticated(false);
   };
 
-  if (user) {
-    return <MainPage user={user} onLogout={handleLogout} />;
+  if (isAuthenticated && user) {
+    return <MainPage onLogout={handleLogout} />;
   }
 
   return showLogin ? (
@@ -57,7 +60,6 @@ function App() {
       onSwitchToLogin={() => setShowLogin(true)}
     />
   );
-  */
 }
 
 export default App;
