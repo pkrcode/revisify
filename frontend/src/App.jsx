@@ -4,38 +4,58 @@ import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
 import { getAuthToken, removeAuthToken } from './services/apiConfig';
 import { logout } from './services/authService';
+import { getUserProfile } from './services/userService';
 
 function App() {
   const [user, setUser] = useState(null);
   const [showLogin, setShowLogin] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Check if user is authenticated on mount
   useEffect(() => {
-    const token = getAuthToken();
-    const userData = localStorage.getItem('user');
-    if (token && userData) {
-      try {
-        setUser(JSON.parse(userData));
-        setIsAuthenticated(true);
-      } catch (err) {
-        console.error('Error parsing user data:', err);
-        removeAuthToken();
-        localStorage.removeItem('user');
+    const initAuth = async () => {
+      const token = getAuthToken();
+      if (token) {
+        try {
+          // Fetch user profile using the token
+          const response = await getUserProfile();
+          setUser(response.user);
+          setIsAuthenticated(true);
+        } catch (err) {
+          console.error('Error fetching user profile:', err);
+          removeAuthToken();
+          localStorage.removeItem('user');
+        }
       }
-    }
+      setLoading(false);
+    };
+
+    initAuth();
   }, []);
 
-  const handleLoginSuccess = (userData) => {
-    localStorage.setItem('user', JSON.stringify(userData.user));
-    setUser(userData.user);
-    setIsAuthenticated(true);
+  const handleLoginSuccess = async (userData) => {
+    // Token is already saved by authService
+    try {
+      // Fetch user profile after login
+      const response = await getUserProfile();
+      setUser(response.user);
+      setIsAuthenticated(true);
+    } catch (err) {
+      console.error('Error fetching user profile:', err);
+    }
   };
 
-  const handleSignupSuccess = (userData) => {
-    localStorage.setItem('user', JSON.stringify(userData.user));
-    setUser(userData.user);
-    setIsAuthenticated(true);
+  const handleSignupSuccess = async (userData) => {
+    // Token is already saved by authService
+    try {
+      // Fetch user profile after signup
+      const response = await getUserProfile();
+      setUser(response.user);
+      setIsAuthenticated(true);
+    } catch (err) {
+      console.error('Error fetching user profile:', err);
+    }
   };
 
   const handleLogout = () => {
@@ -44,6 +64,14 @@ function App() {
     setUser(null);
     setIsAuthenticated(false);
   };
+
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center h-screen">
+        <p className="text-gray-500">Loading...</p>
+      </div>
+    );
+  }
 
   if (isAuthenticated && user) {
     return <MainPage onLogout={handleLogout} />;
