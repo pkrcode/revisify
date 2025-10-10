@@ -19,8 +19,9 @@ function App() {
       if (token) {
         try {
           // Fetch user profile using the token
-          const response = await getUserProfile();
-          setUser(response.user);
+          const userData = await getUserProfile();
+          console.log('User data on init:', userData);
+          setUser(userData); // Backend returns user data directly
           setIsAuthenticated(true);
         } catch (err) {
           console.error('Error fetching user profile:', err);
@@ -36,11 +37,14 @@ function App() {
 
   const handleLoginSuccess = async (userData) => {
     // Token is already saved by authService
+    console.log('Login success, fetching user profile...');
     try {
       // Fetch user profile after login
-      const response = await getUserProfile();
-      setUser(response.user);
+      const userProfile = await getUserProfile();
+      console.log('User profile response:', userProfile);
+      setUser(userProfile); // Backend returns user data directly, not wrapped in { user: ... }
       setIsAuthenticated(true);
+      console.log('Authentication state updated:', { user: userProfile, isAuthenticated: true });
     } catch (err) {
       console.error('Error fetching user profile:', err);
     }
@@ -48,10 +52,12 @@ function App() {
 
   const handleSignupSuccess = async (userData) => {
     // Token is already saved by authService
+    console.log('Signup success, fetching user profile...');
     try {
       // Fetch user profile after signup
-      const response = await getUserProfile();
-      setUser(response.user);
+      const userProfile = await getUserProfile();
+      console.log('User profile response:', userProfile);
+      setUser(userProfile); // Backend returns user data directly, not wrapped in { user: ... }
       setIsAuthenticated(true);
     } catch (err) {
       console.error('Error fetching user profile:', err);

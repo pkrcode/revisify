@@ -24,8 +24,8 @@ const MainPage = ({ onLogout }) => {
 
     const fetchUserProfile = async () => {
         try {
-            const response = await getUserProfile();
-            setUser(response.user);
+            const userData = await getUserProfile();
+            setUser(userData); // Backend returns user data directly
         } catch (err) {
             console.error('Error fetching user profile:', err);
         }
