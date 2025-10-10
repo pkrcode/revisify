@@ -23,6 +23,20 @@ const ProfileModal = ({ user, onClose }) => (
 const RightSidebar = ({ user, onLogout }) => {
     const [isProfileOpen, setIsProfileOpen] = useState(false);
 
+    // Show loading state if user data is not yet available
+    if (!user) {
+        return (
+            <div className="bg-gray-100 flex flex-col w-64">
+                <div className="flex items-center justify-between p-4 border-b">
+                    <h1 className="text-xl font-bold">Profile</h1>
+                </div>
+                <div className="flex-grow p-4 flex items-center justify-center">
+                    <p className="text-gray-500">Loading...</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <>
             <div className="bg-gray-100 flex flex-col w-64">
@@ -47,7 +61,18 @@ const RightSidebar = ({ user, onLogout }) => {
                     <div className="mt-8">
                         <h2 className="text-lg font-semibold">Quiz History</h2>
                         <div className="mt-2 space-y-2">
-                            <p className="text-gray-600 text-sm">No quizzes attempted yet.</p>
+                            {user.stats && user.stats.totalQuizzesAttempted > 0 ? (
+                                <div>
+                                    <p className="text-sm">
+                                        Total Quizzes: <span className="font-semibold">{user.stats.totalQuizzesAttempted}</span>
+                                    </p>
+                                    <p className="text-sm">
+                                        Average Score: <span className="font-semibold">{user.stats.averageScore}%</span>
+                                    </p>
+                                </div>
+                            ) : (
+                                <p className="text-gray-600 text-sm">No quizzes attempted yet.</p>
+                            )}
                         </div>
                     </div>
                 </div>
