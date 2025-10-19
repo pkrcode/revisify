@@ -115,13 +115,21 @@ const ChatWindow = ({ chatId, pdfsReady = true, onChatDeleted = () => {} }) => {
             setError(null);
             console.log('[ChatWindow] Sending message:', userMessage);
             await createMessage(chatId, userMessage);
-            console.log('[ChatWindow] Message sent, refetching messages after 2s...');
-            // Wait a moment for the backend to save the response
-            await new Promise(r => setTimeout(r, 2000));
-            // Refetch all messages after sending to get the AI response
-            console.log('[ChatWindow] Now fetching messages...');
-            await fetchMessages();
-            console.log('[ChatWindow] Fetch complete');
+            console.log('[ChatWindow] Message sent, polling for AI response...');
+            
+            // Show waiting indicator
+            setWaitingForAi(true);
+            setWaitingMessage('Waiting for AI response... This may take a moment.');
+            
+            // Poll for AI response with longer timeout (60 seconds)
+            const found = await pollForAssistantReply(60000, 2000);
+            
+            if (!found) {
+                setError('Response timed out. The backend might be processing. Please refresh the page or try again.');
+                console.warn('[ChatWindow] Poll timeout - no AI response received within 60 seconds');
+            } else {
+                console.log('[ChatWindow] AI response received and loaded');
+            }
         } catch (err) {
             console.error('[ChatWindow] Error sending message:', err);
             setError(`Failed to send message: ${err.message}`);
@@ -129,6 +137,8 @@ const ChatWindow = ({ chatId, pdfsReady = true, onChatDeleted = () => {} }) => {
             setMessages(prev => prev.filter(msg => msg._id !== tempUserMsg._id));
         } finally {
             setSending(false);
+            setWaitingForAi(false);
+            setWaitingMessage('');
         }
     };
 
@@ -206,10 +216,10 @@ const ChatWindow = ({ chatId, pdfsReady = true, onChatDeleted = () => {} }) => {
 
     if (!chatId) {
         return (
-            <div className="flex items-center justify-center h-full bg-gray-50">
+            <div className="flex items-center justify-center h-full bg-gradient-to-b from-gray-50 via-gray-50 to-gray-100">
                 <div className="text-center">
-                    <Sparkles className="w-12 h-12 mx-auto mb-4 text-gray-300" />
-                    <p className="text-gray-500">Select files to start a chat</p>
+                    <Sparkles className="w-12 h-12 mx-auto mb-4 text-gray-400" />
+                    <p className="text-gray-600">Select files to start a chat</p>
                 </div>
             </div>
         );
@@ -217,13 +227,13 @@ const ChatWindow = ({ chatId, pdfsReady = true, onChatDeleted = () => {} }) => {
 
     if (loading) {
         return (
-            <div className="flex items-center justify-center h-full bg-gray-50">
+            <div className="flex items-center justify-center h-full bg-gradient-to-b from-gray-50 via-gray-50 to-gray-100">
                 <div className="text-center">
-                    <svg className="animate-spin h-10 w-10 mx-auto text-blue-600 mb-4" fill="none" viewBox="0 0 24 24">
+                    <svg className="animate-spin h-10 w-10 mx-auto text-gray-800 mb-4" fill="none" viewBox="0 0 24 24">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
                     </svg>
-                    <p className="text-gray-500">Loading messages...</p>
+                    <p className="text-gray-700">Loading messages...</p>
                 </div>
             </div>
         );
@@ -234,10 +244,10 @@ const ChatWindow = ({ chatId, pdfsReady = true, onChatDeleted = () => {} }) => {
     }
 
     return (
-        <div className="flex flex-col h-screen bg-white">
+        <div className="flex flex-col h-screen bg-gradient-to-b from-gray-50 via-gray-50 to-gray-100">
             {/* Header with Delete Button */}
-            <div className="border-b border-gray-200 px-6 py-3 flex justify-between items-center">
-                <h2 className="text-lg font-semibold text-gray-800">Chat</h2>
+            <div className="border-b border-gray-200 px-6 py-3 flex justify-between items-center bg-white/40 backdrop-blur-sm">
+                <h2 className="text-lg font-semibold text-gray-900">Chat</h2>
                 <button
                     onClick={handleDeleteChat}
                     className="flex items-center gap-2 px-3 py-2 text-red-600 hover:bg-red-50 rounded-lg transition"
@@ -252,9 +262,9 @@ const ChatWindow = ({ chatId, pdfsReady = true, onChatDeleted = () => {} }) => {
             <div className="flex-1 overflow-y-auto p-6">
                 <div className="max-w-3xl mx-auto space-y-6">
                     {messages.length === 0 ? (
-                        <div className="flex items-center justify-center h-full text-gray-400">
+                        <div className="flex items-center justify-center h-full text-gray-500">
                             <div className="text-center">
-                                <Sparkles className="w-12 h-12 mx-auto mb-4 text-gray-300" />
+                                <Sparkles className="w-12 h-12 mx-auto mb-4 text-gray-400" />
                                 <p>Start a conversation or generate a quiz!</p>
                             </div>
                         </div>
@@ -267,14 +277,14 @@ const ChatWindow = ({ chatId, pdfsReady = true, onChatDeleted = () => {} }) => {
                                 <div
                                     className={`max-w-[80%] rounded-2xl px-4 py-3 ${
                                         msg.role === 'user'
-                                            ? 'bg-blue-600 text-white'
-                                            : 'bg-gray-100 text-gray-900'
+                                            ? 'bg-gray-800 text-white'
+                                            : 'bg-white/70 backdrop-blur-sm text-gray-900 border border-gray-200'
                                     }`}
                                 >
                                     <p className="whitespace-pre-wrap">{msg.content}</p>
                                     <span
                                         className={`text-xs mt-2 block ${
-                                            msg.role === 'user' ? 'text-blue-100' : 'text-gray-500'
+                                            msg.role === 'user' ? 'text-gray-300' : 'text-gray-600'
                                         }`}
                                     >
                                         {formatTimestamp(msg.createdAt)}
@@ -288,12 +298,12 @@ const ChatWindow = ({ chatId, pdfsReady = true, onChatDeleted = () => {} }) => {
             </div>
 
             {error && (
-                <div className="mx-6 mb-2 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg text-sm">
+                <div className="mx-6 mb-2 p-3 bg-red-100/70 border border-red-300 text-red-800 rounded-lg text-sm backdrop-blur-sm">
                     {error}
                 </div>
             )}
             {waitingForAi && (
-                <div className="mx-6 mb-2 p-3 bg-blue-50 border border-blue-200 text-blue-700 rounded-lg text-sm flex items-center gap-2">
+                <div className="mx-6 mb-2 p-3 bg-gray-100/70 border border-gray-300 text-gray-800 rounded-lg text-sm flex items-center gap-2 backdrop-blur-sm">
                     <svg className="animate-spin h-4 w-4" viewBox="0 0 24 24" fill="none">
                         <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
                         <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0c-5.523 0-10 4.477-10 10h2z"></path>
@@ -303,7 +313,7 @@ const ChatWindow = ({ chatId, pdfsReady = true, onChatDeleted = () => {} }) => {
             )}
 
             {/* Input Area */}
-            <div className="border-t border-gray-200 p-4 bg-white">
+            <div className="border-t border-gray-200 p-4 bg-white/40 backdrop-blur-sm">
                 <div className="max-w-3xl mx-auto space-y-2">
                     <div className="flex gap-2">
                         <div className="flex-1">
@@ -312,14 +322,14 @@ const ChatWindow = ({ chatId, pdfsReady = true, onChatDeleted = () => {} }) => {
                                 onChange={(e) => setInput(e.target.value)}
                                 onKeyDown={handleKeyDown}
                                 placeholder="Ask a question about your study materials..."
-                                className="w-full min-h-[60px] max-h-[200px] resize-none border border-gray-300 rounded-lg p-3 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                                className="w-full min-h-[60px] max-h-[200px] resize-none border border-gray-300 rounded-lg p-3 bg-white focus:outline-none focus:ring-2 focus:ring-gray-400 focus:border-transparent"
                                 disabled={sending || !pdfsReady}
                             />
                         </div>
                         <button
                             onClick={handleSend}
                             disabled={!input.trim() || sending || !pdfsReady || waitingForAi}
-                            className="bg-blue-600 hover:bg-blue-700 disabled:bg-gray-400 text-white p-3 rounded-lg transition-colors disabled:cursor-not-allowed shrink-0 h-fit"
+                            className="bg-gray-800 hover:bg-gray-900 disabled:bg-gray-400 text-white p-3 rounded-lg transition-colors disabled:cursor-not-allowed shrink-0 h-fit"
                             title={!pdfsReady ? 'PDFs are still processing. Please wait.' : 'Send message'}
                         >
                             <Send className="w-5 h-5" />
@@ -328,7 +338,7 @@ const ChatWindow = ({ chatId, pdfsReady = true, onChatDeleted = () => {} }) => {
                     <button
                         onClick={handleGenerateQuiz}
                         disabled={isGeneratingQuiz || waitingForAi || !pdfsReady}
-                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-purple-300 text-purple-700 hover:bg-purple-50 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="w-full flex items-center justify-center gap-2 px-4 py-2.5 border-2 border-gray-400 text-gray-800 hover:bg-gray-50 rounded-lg font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                         title={!pdfsReady ? 'PDFs are still processing. Please wait.' : 'Generate Quiz'}
                     >
                         <Sparkles className="w-4 h-4" />
