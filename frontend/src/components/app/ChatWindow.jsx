@@ -115,21 +115,14 @@ const ChatWindow = ({ chatId, pdfsReady = true, onChatDeleted = () => {} }) => {
             setError(null);
             console.log('[ChatWindow] Sending message:', userMessage);
             await createMessage(chatId, userMessage);
-            console.log('[ChatWindow] Message sent, polling for AI response...');
+            console.log('[ChatWindow] Message sent successfully');
             
-            // Show waiting indicator
-            setWaitingForAi(true);
-            setWaitingMessage('Waiting for AI response... This may take a moment.');
+            // Wait a moment for backend to process
+            await new Promise(r => setTimeout(r, 2000));
             
-            // Poll for AI response with longer timeout (60 seconds)
-            const found = await pollForAssistantReply(60000, 2000);
-            
-            if (!found) {
-                setError('Response timed out. The backend might be processing. Please refresh the page or try again.');
-                console.warn('[ChatWindow] Poll timeout - no AI response received within 60 seconds');
-            } else {
-                console.log('[ChatWindow] AI response received and loaded');
-            }
+            // Fetch messages to get AI response
+            await fetchMessages();
+            console.log('[ChatWindow] Messages fetched after send');
         } catch (err) {
             console.error('[ChatWindow] Error sending message:', err);
             setError(`Failed to send message: ${err.message}`);
