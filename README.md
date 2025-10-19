@@ -23,7 +23,12 @@
 - [Project Structure](#-project-structure)
 - [Development](#-development)
 
-> **📖 Quick Links:**
+> **📖 Service Documentation:**
+> - [🎨 Frontend README](./frontend/README.md) - React UI, components, services
+> - [🖥️ Backend README](./backend-node/README.md) - Express API, controllers, models
+> - [🤖 AI Service README](./ai-service-python/README.md) - FastAPI, RAG, LangChain
+>
+> **📖 Additional Resources:**
 > - [📋 Complete Project Summary](./PROJECT_SUMMARY.md) - Comprehensive technical overview
 > - [⚠️ Detailed Limitations](./LIMITATIONS.md) - API limits, constraints & workarounds
 > - [🚀 Deployment Guide](./DEPLOYMENT.md) - Docker setup & production deploy
