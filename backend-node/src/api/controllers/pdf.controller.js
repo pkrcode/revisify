@@ -140,30 +140,16 @@ export const updatePdfStatusController = async (req, res) => {
 // ... (imports and other functions remain the same) ...
 
 /**
- * @desc    Get all PDFs for the logged-in user PLUS pre-seeded documents.
+ * @desc    Get all PDFs for the logged-in user
  * @route   GET /api/v1/pdfs
  * @access  Private
  */
 export const getAllPdfsController = async (req, res) => {
     try {
-        const adminUserId = process.env.ADMIN_USER_ID;
-
-        // Start with a query that only finds the user's own PDFs
-        const query = { owner: req.user.id };
-
-        // If a valid ADMIN_USER_ID is set, modify the query to include those PDFs as well
-        if (adminUserId && adminUserId.length > 0) {
-            query.$or = [
-                { owner: req.user.id },
-                { owner: adminUserId }
-            ];
-            // Since $or is present, we can remove the initial owner filter
-            delete query.owner;
-        }
-
-        const pdfs = await Pdf.find(query).sort({ updatedAt: -1 });
+        // Get all PDFs owned by any user - shared library approach
+        const pdfs = await Pdf.find({ processingStatus: 'ready' }).sort({ updatedAt: -1 });
         
-        res.status(200).json(pdfs);
+        res.status(200).json({ pdfs });
     } catch (error) {
         console.error('Get All PDFs Error:', error.message);
         res.status(500).json({ message: 'Server error while fetching PDFs.' });

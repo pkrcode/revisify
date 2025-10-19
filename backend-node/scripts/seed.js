@@ -10,21 +10,21 @@ dotenv.config({ path: path.resolve(process.cwd(), '.env') });
 const API_BASE_URL = 'http://localhost:5000/api/v1';
 const PDF_DIR = path.join(process.cwd(), 'scripts', 'seed-pdfs');
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL;
-const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD;
+const USER_EMAIL = process.env.ADMIN_EMAIL;
+const USER_PASSWORD = process.env.ADMIN_PASSWORD;
 
 async function getAuthToken() {
-  console.log('Attempting to log in as admin...');
+  console.log('Logging in to upload PDFs...');
   try {
     const response = await axios.post(`${API_BASE_URL}/auth/login`, {
-      email: ADMIN_EMAIL,
-      password: ADMIN_PASSWORD,
+      email: USER_EMAIL,
+      password: USER_PASSWORD,
     });
     console.log('Login successful.');
     return response.data.token;
   } catch (error) {
-    console.error('Admin login failed:', error.response ? error.response.data : error.message);
-    throw new Error('Could not authenticate admin user.');
+    console.error('Login failed:', error.response ? error.response.data : error.message);
+    throw new Error('Could not authenticate user.');
   }
 }
 
@@ -49,8 +49,8 @@ async function uploadPdf(token, filePath) {
 }
 
 async function runSeeder() {
-  if (!ADMIN_EMAIL || !ADMIN_PASSWORD) {
-    console.error('Please set ADMIN_EMAIL and ADMIN_PASSWORD in your .env file.');
+  if (!USER_EMAIL || !USER_PASSWORD) {
+    console.error('Please set ADMIN_EMAIL and ADMIN_PASSWORD in your .env file (these are your regular user credentials).');
     return;
   }
 
@@ -63,7 +63,7 @@ async function runSeeder() {
       return;
     }
 
-    console.log(`Found ${pdfFiles.length} PDFs to seed.`);
+    console.log(`Found ${pdfFiles.length} PDFs to upload.`);
     for (const file of pdfFiles) {
       const fullPath = path.join(PDF_DIR, file);
       await uploadPdf(token, fullPath);
@@ -71,7 +71,7 @@ async function runSeeder() {
       await new Promise(resolve => setTimeout(resolve, 2000)); 
     }
     
-    console.log('Seeding process completed.');
+    console.log('PDF upload process completed. Files will be processed by the AI service.');
   } catch (error) {
     console.error('An error occurred during the seeding process:', error.message);
   }

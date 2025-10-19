@@ -1,46 +1,45 @@
 import { useState, useEffect } from 'react';
-import { getAllPdfs, uploadPdfs } from '../../services/pdfService';
+import { FileText, Check } from 'lucide-react';
+import { getAllPdfs } from '../../services/pdfService';
 
 const FileCard = ({ file, onSelect, isSelected }) => {
-    const getStatusColor = (status) => {
-        switch (status) {
-            case 'completed':
-                return 'border-green-500 bg-green-50';
-            case 'processing':
-                return 'border-yellow-500 bg-yellow-50';
-            case 'failed':
-                return 'border-red-500 bg-red-50';
-            default:
-                return 'bg-white';
-        }
-    };
-
     return (
         <div
-            onClick={() => file.status === 'completed' && onSelect(file._id)}
-            className={`p-4 border rounded-lg ${file.status === 'completed' ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
-                } ${isSelected ? 'bg-indigo-100 border-indigo-500' : getStatusColor(file.status)
-                }`}
+            onClick={() => file.processingStatus === 'ready' && onSelect(file._id)}
+            className={`p-4 rounded-lg transition-all cursor-pointer border-2 ${
+                file.processingStatus === 'ready' ? 'hover:shadow-md' : 'cursor-not-allowed opacity-60'
+            } ${
+                isSelected
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-gray-200 hover:border-gray-300 bg-white'
+            }`}
         >
-            <h3 className="font-bold truncate" title={file.fileName}>{file.fileName}</h3>
-            <p className="text-sm text-gray-500">PDF • {file.status}</p>
-            {file.status === 'processing' && (
-                <p className="text-xs text-yellow-600 mt-1">Processing...</p>
-            )}
-            {file.status === 'failed' && (
-                <p className="text-xs text-red-600 mt-1">Failed to process</p>
-            )}
+            <div className="flex flex-col items-center text-center gap-2">
+                <div className="relative">
+                    <FileText className={`w-12 h-12 ${isSelected ? 'text-blue-600' : 'text-gray-400'}`} />
+                    {isSelected && (
+                        <div className="absolute -top-1 -right-1 bg-blue-600 rounded-full p-1">
+                            <Check className="w-3 h-3 text-white" />
+                        </div>
+                    )}
+                </div>
+                <span className="text-sm break-words line-clamp-2">{file.filename}</span>
+                {file.processingStatus === 'processing' && (
+                    <span className="text-xs text-yellow-600">Processing...</span>
+                )}
+                {file.processingStatus === 'failed' && (
+                    <span className="text-xs text-red-600">Failed</span>
+                )}
+            </div>
         </div>
     );
 };
 
-const FileList = ({ selectedFiles, setSelectedFiles, onDone }) => {
+const FileList = ({ selectedFiles, setSelectedFiles, onDone, onRefresh }) => {
     const [files, setFiles] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
-    const [uploading, setUploading] = useState(false);
 
-    // Fetch PDFs on component mount
     useEffect(() => {
         fetchPdfs();
     }, []);
@@ -59,23 +58,11 @@ const FileList = ({ selectedFiles, setSelectedFiles, onDone }) => {
         }
     };
 
-    const handleFileUpload = async (event) => {
-        const selectedFilesArray = Array.from(event.target.files);
-        if (selectedFilesArray.length === 0) return;
-
-        try {
-            setUploading(true);
-            setError(null);
-            await uploadPdfs(selectedFilesArray);
-            // Refresh the file list after upload
-            await fetchPdfs();
-        } catch (err) {
-            setError(err.message);
-            console.error('Error uploading PDFs:', err);
-        } finally {
-            setUploading(false);
+    useEffect(() => {
+        if (onRefresh) {
+            onRefresh(fetchPdfs);
         }
-    };
+    }, [onRefresh]);
 
     const handleSelect = (fileId) => {
         setSelectedFiles((prev) =>
@@ -85,56 +72,48 @@ const FileList = ({ selectedFiles, setSelectedFiles, onDone }) => {
         );
     };
 
+    const selectedCount = selectedFiles.length;
+
     if (loading) {
         return (
-            <div className="flex justify-center items-center h-64">
-                <p className="text-gray-500">Loading files...</p>
+            <div className="flex-1 flex items-center justify-center bg-gray-50">
+                <div className="text-center">
+                    <svg className="animate-spin h-12 w-12 mx-auto text-blue-600 mb-4" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    <p className="text-gray-500">Loading files...</p>
+                </div>
             </div>
         );
     }
 
     return (
-        <div>
-            <div className="flex justify-between items-center mb-4">
-                <h2 className="text-2xl font-bold">Select Files to Study</h2>
-                <div>
-                    <input
-                        type="file"
-                        id="file-upload"
-                        multiple
-                        accept=".pdf"
-                        onChange={handleFileUpload}
-                        className="hidden"
-                    />
-                    <label
-                        htmlFor="file-upload"
-                        className={`px-4 py-2 bg-green-600 text-white rounded-md cursor-pointer hover:bg-green-700 ${uploading ? 'opacity-50 cursor-not-allowed' : ''
-                            }`}
-                    >
-                        {uploading ? 'Uploading...' : 'Upload PDFs'}
-                    </label>
+        <div className="flex-1 flex flex-col items-center justify-center p-8 bg-gray-50">
+            <div className="max-w-4xl w-full">
+                <div className="text-center mb-8">
+                    <h1 className="text-3xl font-bold text-gray-900 mb-2">Select Files to Study</h1>
+                    <p className="text-gray-600">
+                        Choose from your uploaded files to get started
+                    </p>
                 </div>
-            </div>
 
-            {error && (
-                <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                    {error}
-                </div>
-            )}
+                {error && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
+                        {error}
+                    </div>
+                )}
 
-            {files.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-lg">
-                    <p className="text-gray-500 mb-4">No files uploaded yet</p>
-                    <label
-                        htmlFor="file-upload"
-                        className="px-6 py-3 bg-indigo-600 text-white rounded-md cursor-pointer hover:bg-indigo-700 inline-block"
-                    >
-                        Upload Your First PDF
-                    </label>
-                </div>
-            ) : (
-                <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                {files.length === 0 ? (
+                    <div className="text-center py-12 mb-6 bg-white rounded-lg border-2 border-dashed border-gray-300">
+                        <FileText className="w-16 h-16 mx-auto mb-4 text-gray-300" />
+                        <p className="text-gray-600 mb-2 font-medium">No files uploaded yet</p>
+                        <p className="text-sm text-gray-500">
+                            Use the "Upload files" button in the sidebar to add files
+                        </p>
+                    </div>
+                ) : (
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mb-6">
                         {files.map((file) => (
                             <FileCard
                                 key={file._id}
@@ -144,18 +123,22 @@ const FileList = ({ selectedFiles, setSelectedFiles, onDone }) => {
                             />
                         ))}
                     </div>
-                    <div className="mt-6 flex justify-between items-center">
-                        <p>{selectedFiles.length} files selected</p>
-                        <button
-                            onClick={onDone}
-                            disabled={selectedFiles.length === 0}
-                            className="px-6 py-2 bg-indigo-600 text-white rounded-md disabled:bg-gray-400 hover:bg-indigo-700"
-                        >
-                            Done
-                        </button>
-                    </div>
-                </>
-            )}
+                )}
+
+                <div className="flex items-center justify-between mt-6">
+                    <p className="text-gray-600">
+                        <span className="font-semibold text-blue-600 text-lg">{selectedCount}</span>
+                        <span> file{selectedCount !== 1 ? 's' : ''} selected</span>
+                    </p>
+                    <button
+                        onClick={onDone}
+                        disabled={selectedCount === 0}
+                        className="bg-green-600 hover:bg-green-700 disabled:bg-gray-400 text-white px-8 py-3 rounded-lg font-medium transition-colors disabled:cursor-not-allowed"
+                    >
+                        Done
+                    </button>
+                </div>
+            </div>
         </div>
     );
 };

@@ -1,4 +1,5 @@
 import API_BASE_URL, { getAuthToken } from './apiConfig.js';
+import { withRetry } from './retry.js';
 
 /**
  * Generate a new quiz for a specific chat session
@@ -8,22 +9,24 @@ import API_BASE_URL, { getAuthToken } from './apiConfig.js';
  */
 export const generateQuiz = async (chatId) => {
   const token = getAuthToken();
-  
-  const response = await fetch(`${API_BASE_URL}/quizzes/generate/${chatId}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
+
+  return withRetry(async () => {
+    const response = await fetch(`${API_BASE_URL}/quizzes/generate/${chatId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    });
+    if (!response.ok) {
+      let message = 'Failed to generate quiz.';
+      try { message = (await response.text()) || message; } catch (_) {}
+      const err = new Error(message);
+      err.status = response.status;
+      throw err;
+    }
+    return await response.json();
   });
-  
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to generate quiz');
-  }
-  
-  const data = await response.json();
-  return data;
 };
 
 /**
@@ -36,22 +39,24 @@ export const generateQuiz = async (chatId) => {
 export const submitQuiz = async (quizId, answers) => {
   const token = getAuthToken();
   
-  const response = await fetch(`${API_BASE_URL}/quizzes/submit/${quizId}`, {
-    method: 'POST',
-    headers: {
-      'Authorization': `Bearer ${token}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ answers }),
+  return withRetry(async () => {
+    const response = await fetch(`${API_BASE_URL}/quizzes/submit/${quizId}`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ answers }),
+    });
+    if (!response.ok) {
+      let message = 'Failed to submit quiz';
+      try { message = (await response.text()) || message; } catch (_) {}
+      const err = new Error(message);
+      err.status = response.status;
+      throw err;
+    }
+    return await response.json();
   });
-  
-  if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to submit quiz');
-  }
-  
-  const data = await response.json();
-  return data;
 };
 
 /**
@@ -72,8 +77,11 @@ export const getQuizAttemptsForChat = async (chatId) => {
   });
   
   if (!response.ok) {
-    const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to fetch quiz attempts');
+    let message = 'Failed to fetch quiz attempts';
+    try { message = (await response.text()) || message; } catch (_) {}
+    const err = new Error(message);
+    err.status = response.status;
+    throw err;
   }
   
   const data = await response.json();
@@ -98,8 +106,36 @@ export const getQuizAttemptDetails = async (attemptId) => {
   });
   
   if (!response.ok) {
+    let message = 'Failed to fetch quiz attempt details';
+    try { message = (await response.text()) || message; } catch (_) {}
+    const err = new Error(message);
+    err.status = response.status;
+    throw err;
+  }
+  
+  const data = await response.json();
+  return data;
+};
+
+/**
+ * Get all quiz attempts for the current user
+ * @route GET /api/v1/quizzes/attempts
+ * @access Private
+ */
+export const getQuizAttempts = async () => {
+  const token = getAuthToken();
+  
+  const response = await fetch(`${API_BASE_URL}/quizzes/attempts`, {
+    method: 'GET',
+    headers: {
+      'Authorization': `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  });
+  
+  if (!response.ok) {
     const errorData = await response.json();
-    throw new Error(errorData.message || 'Failed to fetch quiz attempt details');
+    throw new Error(errorData.message || 'Failed to fetch quiz attempts');
   }
   
   const data = await response.json();

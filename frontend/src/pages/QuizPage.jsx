@@ -21,7 +21,8 @@ const QuizPage = ({ onBackToChat, chatId }) => {
     const fetchQuizAttempts = async () => {
         try {
             const response = await getQuizAttemptsForChat(chatId);
-            setAttempts(response.attempts || []);
+            // Backend returns array directly, not wrapped
+            setAttempts(Array.isArray(response) ? response : []);
         } catch (err) {
             console.error('Error fetching quiz attempts:', err);
         }
@@ -33,10 +34,11 @@ const QuizPage = ({ onBackToChat, chatId }) => {
             setError(null);
             setResult(null);
             setAnswers({});
-            const response = await generateQuiz(chatId);
-            setQuiz(response.quiz);
+            const quiz = await generateQuiz(chatId);
+            // Backend returns quiz object directly, not wrapped
+            setQuiz(quiz);
         } catch (err) {
-            setError(err.message);
+            setError(err.message || 'Failed to generate quiz. Please try again.');
             console.error('Error generating quiz:', err);
         } finally {
             setLoading(false);

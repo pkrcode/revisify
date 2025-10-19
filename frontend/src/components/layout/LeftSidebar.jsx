@@ -1,88 +1,72 @@
-import { useState } from 'react';
+import { MessageSquarePlus, Upload, History, BookOpen } from 'lucide-react';
 
-const LeftSidebar = ({ onNewChat, chats = [], onSelectChat, currentChatId }) => {
-    const [isCollapsed, setIsCollapsed] = useState(false);
-
+const LeftSidebar = ({ onNewChat, onUploadFiles, chats = [], onSelectChat, currentChatId }) => {
     const formatDate = (dateString) => {
         const date = new Date(dateString);
-        const now = new Date();
-        const diffTime = Math.abs(now - date);
-        const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
-
-        if (diffDays === 0) {
-            return 'Today';
-        } else if (diffDays === 1) {
-            return 'Yesterday';
-        } else if (diffDays < 7) {
-            return `${diffDays} days ago`;
-        } else {
-            return date.toLocaleDateString();
-        }
+        return date.toLocaleDateString();
     };
 
     return (
-        <div
-            className={`bg-gray-800 text-white flex flex-col transition-all duration-300 ${isCollapsed ? 'w-24' : 'w-64'
-                }`}
-        >
-            <div className="flex items-center justify-between p-4">
-                {!isCollapsed && <h1 className="text-xl font-bold">Revisify</h1>}
-                <button onClick={() => setIsCollapsed(!isCollapsed)} className="p-2 rounded-md hover:bg-gray-700 cursor-pointer">
-                    {isCollapsed ? (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-7 w-7 ml-2" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16m-7 6h7" />
-                        </svg>
-                    ) : (
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                        </svg>
-                    )}
-                </button>
+        <div className="w-64 bg-gray-950 text-white flex flex-col h-screen border-r border-gray-800">
+            {/* Logo */}
+            <div className="p-4 border-b border-gray-800">
+                <div className="flex items-center gap-2">
+                    <BookOpen className="w-6 h-6 text-blue-400" />
+                    <span className="text-xl font-semibold">Revisify</span>
+                </div>
             </div>
-            <div className="p-4 space-y-4">
+
+            {/* Action Buttons */}
+            <div className="p-3 space-y-2 border-b border-gray-800">
                 <button
                     onClick={onNewChat}
-                    className={`w-full text-left bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 px-4 rounded flex items-center ${isCollapsed ? 'justify-center' : ''}`}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
                 >
-                    <svg xmlns="http://www.w3.org/2000/svg" className={`h-6 w-6 ${!isCollapsed ? 'mr-3' : ''}`} viewBox="0 0 20 20" fill="currentColor">
-                        <path fillRule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clipRule="evenodd" />
-                    </svg>
-                    {!isCollapsed && 'New chat'}
+                    <MessageSquarePlus className="w-4 h-4" />
+                    <span className="text-sm font-medium">New chat</span>
+                </button>
+                <button
+                    onClick={onUploadFiles}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 bg-gray-800 hover:bg-gray-700 text-white rounded-lg transition-colors"
+                >
+                    <Upload className="w-4 h-4" />
+                    <span className="text-sm font-medium">Upload files</span>
                 </button>
             </div>
-            <div className="flex-1 p-4 border-t border-gray-700 overflow-y-auto">
-                {!isCollapsed && <h2 className="text-lg font-semibold mb-3">Chat History</h2>}
-                <div className="space-y-2">
-                    {chats.length === 0 ? (
-                        <p className="text-gray-400 text-sm">{isCollapsed ? '...' : 'No recent chats.'}</p>
-                    ) : (
-                        chats.map((chat) => (
-                            <button
-                                key={chat._id}
-                                onClick={() => onSelectChat(chat._id)}
-                                className={`w-full text-left p-3 rounded-md transition-colors ${currentChatId === chat._id
-                                        ? 'bg-indigo-600'
-                                        : 'bg-gray-700 hover:bg-gray-600'
-                                    } ${isCollapsed ? 'flex justify-center' : ''}`}
-                                title={isCollapsed ? `${chat.pdfs?.length || 0} PDFs` : ''}
-                            >
-                                {isCollapsed ? (
-                                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-                                    </svg>
-                                ) : (
-                                    <div>
-                                        <p className="font-medium truncate">
-                                            {chat.pdfs?.length || 0} PDF{chat.pdfs?.length !== 1 ? 's' : ''}
-                                        </p>
-                                        <p className="text-xs text-gray-400 mt-1">
-                                            {formatDate(chat.createdAt)}
-                                        </p>
+
+            {/* Chat History */}
+            <div className="flex-1 overflow-hidden">
+                <div className="p-3 flex items-center gap-2 text-gray-400">
+                    <History className="w-4 h-4" />
+                    <span className="text-sm font-medium">Chat History</span>
+                </div>
+                <div className="overflow-y-auto h-[calc(100vh-240px)] px-2">
+                    <div className="space-y-1">
+                        {chats.length === 0 ? (
+                            <div className="p-4 text-center text-gray-500 text-sm">
+                                No chat history yet
+                            </div>
+                        ) : (
+                            chats.map((chat) => (
+                                <button
+                                    key={chat._id}
+                                    onClick={() => onSelectChat(chat._id)}
+                                    className={`w-full text-left p-3 rounded-lg transition-colors ${
+                                        currentChatId === chat._id
+                                            ? 'bg-gray-800'
+                                            : 'hover:bg-gray-800'
+                                    }`}
+                                >
+                                    <div className="text-sm text-gray-200 truncate">
+                                        {chat.title || `${chat.pdfs?.length || 0} PDF${chat.pdfs?.length !== 1 ? 's' : ''}`}
                                     </div>
-                                )}
-                            </button>
-                        ))
-                    )}
+                                    <div className="text-xs text-gray-500 mt-1">
+                                        {formatDate(chat.createdAt)}
+                                    </div>
+                                </button>
+                            ))
+                        )}
+                    </div>
                 </div>
             </div>
         </div>
