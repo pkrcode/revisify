@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import HomePage from './pages/HomePage';
 import MainPage from './pages/MainPage';
 import LoginPage from './pages/LoginPage';
 import SignupPage from './pages/SignupPage';
@@ -8,7 +9,7 @@ import { getUserProfile } from './services/userService';
 
 function App() {
   const [user, setUser] = useState(null);
-  const [showLogin, setShowLogin] = useState(true);
+  const [currentPage, setCurrentPage] = useState('home'); // 'home', 'login', 'signup', 'main'
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
 
@@ -23,11 +24,15 @@ function App() {
           console.log('User data on init:', userData);
           setUser(userData); // Backend returns user data directly
           setIsAuthenticated(true);
+          setCurrentPage('main');
         } catch (err) {
           console.error('Error fetching user profile:', err);
           removeAuthToken();
           localStorage.removeItem('user');
+          setCurrentPage('home');
         }
+      } else {
+        setCurrentPage('home');
       }
       setLoading(false);
     };
@@ -44,6 +49,7 @@ function App() {
       console.log('User profile response:', userProfile);
       setUser(userProfile); // Backend returns user data directly, not wrapped in { user: ... }
       setIsAuthenticated(true);
+      setCurrentPage('main');
       console.log('Authentication state updated:', { user: userProfile, isAuthenticated: true });
     } catch (err) {
       console.error('Error fetching user profile:', err);
@@ -59,6 +65,7 @@ function App() {
       console.log('User profile response:', userProfile);
       setUser(userProfile); // Backend returns user data directly, not wrapped in { user: ... }
       setIsAuthenticated(true);
+      setCurrentPage('main');
     } catch (err) {
       console.error('Error fetching user profile:', err);
     }
@@ -69,6 +76,7 @@ function App() {
     localStorage.removeItem('user');
     setUser(null);
     setIsAuthenticated(false);
+    setCurrentPage('home');
   };
 
   if (loading) {
@@ -79,21 +87,34 @@ function App() {
     );
   }
 
-  if (isAuthenticated && user) {
-    return <MainPage onLogout={handleLogout} />;
+  if (currentPage === 'home') {
+    return (
+      <HomePage
+        onLoginClick={() => setCurrentPage('login')}
+        onSignupClick={() => setCurrentPage('signup')}
+      />
+    );
   }
 
-  return showLogin ? (
-    <LoginPage
-      onLoginSuccess={handleLoginSuccess}
-      onSwitchToSignup={() => setShowLogin(false)}
-    />
-  ) : (
-    <SignupPage
-      onSignupSuccess={handleSignupSuccess}
-      onSwitchToLogin={() => setShowLogin(true)}
-    />
-  );
+  if (currentPage === 'login') {
+    return (
+      <LoginPage
+        onLoginSuccess={handleLoginSuccess}
+        onSwitchToSignup={() => setCurrentPage('signup')}
+      />
+    );
+  }
+
+  if (currentPage === 'signup') {
+    return (
+      <SignupPage
+        onSignupSuccess={handleSignupSuccess}
+        onSwitchToLogin={() => setCurrentPage('login')}
+      />
+    );
+  }
+
+  return <MainPage onLogout={handleLogout} />;
 }
 
 export default App;
