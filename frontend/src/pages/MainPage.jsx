@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { Menu, X } from 'lucide-react';
 import ChatWindow from '../components/app/ChatWindow';
 import FileList from '../components/app/FileList';
 import LeftSidebar from '../components/layout/LeftSidebar';
@@ -25,6 +26,8 @@ const MainPage = ({ onLogout }) => {
     const [currentChatDetails, setCurrentChatDetails] = useState(null);
     const [selectedAttemptId, setSelectedAttemptId] = useState(null);
     const [refreshFileList, setRefreshFileList] = useState(null);
+    const [leftSidebarOpen, setLeftSidebarOpen] = useState(false);
+    const [rightSidebarOpen, setRightSidebarOpen] = useState(false);
 
     // Fetch user profile and chats on mount
     useEffect(() => {
@@ -318,29 +321,85 @@ const MainPage = ({ onLogout }) => {
     };
 
     return (
-        <div className="flex h-screen bg-gradient-to-b from-gray-50 via-gray-50 to-gray-100">
-            <LeftSidebar
-                onNewChat={handleNewChat}
-                onUploadFiles={handleUploadFiles}
-                chats={chats}
-                onSelectChat={handleSelectChat}
-                currentChatId={currentChatId}
-            />
-            <main className="flex-1 overflow-auto">{renderContent()}</main>
-            <RightSidebar
-                user={user}
-                onLogout={onLogout}
-                quizAttempts={quizAttempts}
-                youtubeRecommendations={youtubeRecommendations}
-                onViewQuizAttempt={handleViewQuizAttempt}
-                processingStatus={currentChatDetails?.pdfs ? {
-                    isProcessing: currentChatDetails.pdfs.some(
-                        pdf => pdf.processingStatus === 'processing' || pdf.processingStatus === 'pending'
-                    ),
-                    ready: currentChatDetails.pdfs.filter(pdf => pdf.processingStatus === 'ready').length,
-                    total: currentChatDetails.pdfs.length
-                } : null}
-            />
+        <div className="flex h-screen bg-gradient-to-b from-gray-50 via-gray-50 to-gray-100 overflow-hidden">
+            {/* Mobile Menu Buttons */}
+            <div className="lg:hidden fixed top-4 left-4 z-50">
+                <button
+                    onClick={() => setLeftSidebarOpen(!leftSidebarOpen)}
+                    className="p-2 bg-gray-800 text-white rounded-lg shadow-lg hover:bg-gray-900 transition-colors"
+                >
+                    {leftSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
+            </div>
+            
+            <div className="lg:hidden fixed top-4 right-4 z-50">
+                <button
+                    onClick={() => setRightSidebarOpen(!rightSidebarOpen)}
+                    className="p-2 bg-gray-800 text-white rounded-lg shadow-lg hover:bg-gray-900 transition-colors"
+                >
+                    {rightSidebarOpen ? <X className="w-6 h-6" /> : <Menu className="w-6 h-6" />}
+                </button>
+            </div>
+
+            {/* Left Sidebar - Desktop always visible, Mobile with overlay */}
+            <div className={`
+                fixed lg:relative inset-y-0 left-0 z-40
+                transform transition-transform duration-300 ease-in-out
+                ${leftSidebarOpen ? 'translate-x-0' : '-translate-x-full lg:translate-x-0'}
+            `}>
+                <LeftSidebar
+                    onNewChat={handleNewChat}
+                    onUploadFiles={handleUploadFiles}
+                    chats={chats}
+                    onSelectChat={(chatId) => {
+                        handleSelectChat(chatId);
+                        setLeftSidebarOpen(false);
+                    }}
+                    currentChatId={currentChatId}
+                />
+            </div>
+
+            {/* Mobile Overlay for Left Sidebar */}
+            {leftSidebarOpen && (
+                <div
+                    className="lg:hidden fixed inset-0 bg-black/50 z-30"
+                    onClick={() => setLeftSidebarOpen(false)}
+                />
+            )}
+
+            {/* Main Content */}
+            <main className="flex-1 overflow-auto pt-16 lg:pt-0">{renderContent()}</main>
+
+            {/* Right Sidebar - Desktop always visible, Mobile with overlay */}
+            <div className={`
+                fixed lg:relative inset-y-0 right-0 z-40
+                transform transition-transform duration-300 ease-in-out
+                ${rightSidebarOpen ? 'translate-x-0' : 'translate-x-full lg:translate-x-0'}
+            `}>
+                <RightSidebar
+                    user={user}
+                    onLogout={onLogout}
+                    quizAttempts={quizAttempts}
+                    youtubeRecommendations={youtubeRecommendations}
+                    onViewQuizAttempt={handleViewQuizAttempt}
+                    processingStatus={currentChatDetails?.pdfs ? {
+                        isProcessing: currentChatDetails.pdfs.some(
+                            pdf => pdf.processingStatus === 'processing' || pdf.processingStatus === 'pending'
+                        ),
+                        ready: currentChatDetails.pdfs.filter(pdf => pdf.processingStatus === 'ready').length,
+                        total: currentChatDetails.pdfs.length
+                    } : null}
+                />
+            </div>
+
+            {/* Mobile Overlay for Right Sidebar */}
+            {rightSidebarOpen && (
+                <div
+                    className="lg:hidden fixed inset-0 bg-black/50 z-30"
+                    onClick={() => setRightSidebarOpen(false)}
+                />
+            )}
+
             {isUploadModalOpen && (
                 <UploadModal
                     onClose={() => setIsUploadModalOpen(false)}
