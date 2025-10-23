@@ -18,6 +18,7 @@ export const generateQuiz = async (chatId) => {
         'Content-Type': 'application/json',
       },
     });
+    console.log(response);
     if (!response.ok) {
       let message = 'Failed to generate quiz.';
       try { message = (await response.text()) || message; } catch (_) {}
