@@ -7,6 +7,7 @@ import { getAuthToken, removeAuthToken } from './services/apiConfig';
 import { logout } from './services/authService';
 import { getUserProfile } from './services/userService';
 
+// App starts with HomePage as the initial landing page
 function App() {
   const [user, setUser] = useState(null);
   const [currentPage, setCurrentPage] = useState('home'); // 'home', 'login', 'signup', 'main'
