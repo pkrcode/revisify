@@ -54,8 +54,6 @@
 
 ## ✨ Features
 
-## ✨ Features
-
 ### 🔐 Authentication & User Management
 - **Secure Registration & Login**: JWT-based authentication with bcrypt password hashing
 - **Protected Routes**: All user-specific actions require authentication
