@@ -40,8 +40,6 @@
 
 **Study App** is an AI-powered learning platform designed specifically for students to enhance their study experience. Built with a modern microservices architecture, it leverages both **local AI models** (Ollama) and **cloud AI services** (Google Gemini) to provide a hybrid, cost-effective solution for intelligent document processing and interactive learning
 
-**Study App** is an AI-powered learning platform designed specifically for students to enhance their study experience. Built with a modern microservices architecture, it leverages both **local AI models** (Ollama) and **cloud AI services** (Google Gemini) to provide a hybrid, cost-effective solution for intelligent document processing and interactive learning.
-
 ### 🎯 Key Capabilities
 
 - **📄 Multi-PDF Upload & Processing**: Upload up to 10 PDFs simultaneously (50MB each), stored securely on Cloudinary
