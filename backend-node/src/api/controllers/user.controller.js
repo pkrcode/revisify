@@ -19,7 +19,7 @@ export const getUserProfileController = async (req, res) => {
           _id: null,
           totalAttempts: { $sum: 1 },
           totalScoreSum: { $sum: '$totalScore' },
-          totalQuestionsSum: { $sum: { $size: '$answeredQuestions' } },
+          totalQuestionsSum: { $sum: { $size: { $ifNull: ['$answeredQuestions', []] } } },
         },
       },
     ]);

@@ -28,7 +28,7 @@ export const generateQuizController = async (req, res) => {
         // --- UPDATED: Reduced the number of questions for faster generation with local models ---
         const numMCQs = 3 + (n > 1 ? (n - 1) * 2 : 0); // Reduced from 5 + 3*(n-1)
         const numSAQs = 1 + (n > 1 ? (n - 1) * 1 : 0); // Reduced from 3 + 2*(n-1)
-        const numLAQs = 1 + (n > 1 ? (n -1)/2 : 0); // Reduced from 2 + 1*(n-1)
+        const numLAQs = 1 + (n > 1 ? Math.floor((n - 1) / 2) : 0); // Reduced from 2 + 1*(n-1)
         
         // 3. Call the Python AI service to generate the quiz content
         const response = await axios.post(`${process.env.AI_SERVICE_URL}/api/v1/generate-quiz`, {

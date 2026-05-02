@@ -5,8 +5,13 @@ import os
 # Load environment variables at the very beginning
 load_dotenv()
 
+
 # Import routers after loading env vars
 from app.api import pdf_api, chat_api, quiz_api, youtube_api # Import the new youtube_api
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
 
 app = FastAPI(title="AI Microservice for Study App")
 

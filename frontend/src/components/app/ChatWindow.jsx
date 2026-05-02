@@ -233,7 +233,7 @@ const ChatWindow = ({ chatId, pdfsReady = true, onChatDeleted = () => {} }) => {
     }
 
     if (showQuiz && currentQuiz) {
-        return <FullscreenQuiz quiz={currentQuiz} onExit={handleQuizExit} onSubmitComplete={handleQuizSubmit} />;
+        return <FullscreenQuiz quiz={currentQuiz} onExit={handleQuizExit} onSubmitSuccess={handleQuizSubmit} />;
     }
 
     return (

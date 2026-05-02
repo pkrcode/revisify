@@ -1,83 +1,143 @@
-# Dependencies
+# ========================
+
+# Python (ai-service-python)
+
+# ========================
+
+**pycache**/
+*.py[cod]
+*.pyo
+*.pyd
+.Python
+*.egg
+*.egg-info/
+dist/
+build/
+.eggs/
+
+# Virtual environments
+
+.venv/
+venv/
+env/
+ENV/
+
+# Environment variables
+
+.env
+*.env
+!.env.example
+
+# ========================
+
+# FAISS / Vector Store (IMPORTANT)
+
+# ========================
+
+ai-service-python/vector_store/
+*.faiss
+*.index
+*.pkl
+*.bin
+
+# ========================
+
+# Hugging Face / Cache
+
+# ========================
+
+.cache/
+hf_cache/
+huggingface/
+
+# ========================
+
+# LangChain / LangSmith
+
+# ========================
+
+.langchain/
+
+# ========================
+
+# Node.js (backend-node)
+
+# ========================
+
 node_modules/
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
-pnpm-debug.log*
-
-# Build outputs
-dist/
-build/
-*.local
-
-# Environment variables
-.env
-.env.local
-.env.development.local
-.env.test.local
-.env.production.local
-
-# Editor directories and files
-.vscode/*
-!.vscode/extensions.json
-.idea
-.DS_Store
-*.suo
-*.ntvs*
-*.njsproj
-*.sln
-*.sw?
-
-# OS files
-Thumbs.db
-
-# Logs
-logs
+.pnp/
+.pnp.js
 *.log
 
-# Testing
-coverage/
-.nyc_output/
-.vercel
+# ========================
 
-# Documentation files (local development only)
-00_START_HERE.md
-BACKEND_API_SUMMARY.md
-CHANGES_SUMMARY.md
-CODE_CHANGES_DETAILED.md
-CONSOLE_LOGS_GUIDE.md
-FRONTEND_DEBUG_SUMMARY.md
-FRONTEND_FIX_SUMMARY.md
-NEXT_STEPS.md
-QUICK_REFERENCE.md
-QUICK_START.md
-QUIZ_GENERATION_FIX.md
-README_LATEST_UPDATE.md
-YOUTUBE_RECOMMENDATIONS_FIX.md
-frontend/COMPLETE_SUMMARY.md
-frontend/FILE_SELECTION_UPDATE.md
-frontend/FRONTEND_REDESIGN.md
-frontend/FRONTEND_UPDATE_SUMMARY.md
-frontend/QUICK_START.md
-frontend/TESTING_GUIDE.md
-frontend/UI_CHANGES_GUIDE.md
-frontend/src/components/app/FullscreenQuiz.jsx
-frontend/src/components/app/QuizAttemptModal.jsx
-frontend/src/components/app/UploadModal.jsx
-frontend/src/services/retry.js
-# Diagnostic files (Oct 19, 2025)
-BACKEND_DIAGNOSTIC_CHECKLIST.md
-DOCUMENT_INDEX.md
-FINISHED.md
-FRONTEND_ANALYSIS.md
-MASTER_SUMMARY.md
-POTENTIAL_FRONTEND_FIXES.md
-QUICK_DIAGNOSTIC.md
-SESSION_FINAL_REPORT.md
-SESSION_SUMMARY_OCT19.md
-README_UPDATES_SUMMARY.md
-DOCUMENTATION_GUIDE.md
-HOMEPAGE_COMPLETE.md
-HOMEPAGE_VISUAL_GUIDE.md
+# React + Vite (frontend)
 
+# ========================
 
+frontend/node_modules/
+frontend/dist/
+frontend/.vite/
+frontend/build/
+*.local
+
+# ESLint cache
+
+.eslintcache
+
+# ========================
+
+# Environment & Secrets
+
+# ========================
+
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Cloudinary / Google / JWT secrets
+
+cloudinary.config.js
+service-account.json
+credentials.json
+token.json
+
+# ========================
+
+# Database
+
+# ========================
+
+*.sqlite
+*.db
+dump.rdb
+data/db/
+
+# ========================
+
+# OS & Editor
+
+# ========================
+
+.DS_Store
+Thumbs.db
+desktop.ini
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# ========================
+
+# Uploads / Media
+
+# ========================
+
+uploads/
+temp/
+tmp/
+*.pdf

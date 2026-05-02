@@ -17,14 +17,16 @@ from .rag_service import VECTOR_STORE_DIR
 
 # --- Model Initialization (Hybrid) ---
 # Use the full, correct model name from your list
-llm = ChatGoogleGenerativeAI(model="models/gemini-pro-latest", temperature=0.3)
+llm = ChatGoogleGenerativeAI(model="gemini-3-flash-preview", temperature=0.3)
 # Use local Ollama for loading/retrieving embeddings
 embeddings = OllamaEmbeddings(model="nomic-embed-text")
 
 def get_context_from_pdfs(pdf_ids: List[str]) -> str:
+    print(f"LOADING PDFS: {pdf_ids}")  # ADD THIS
     all_docs = []
     for pdf_id in pdf_ids:
         vector_store_path = os.path.join(VECTOR_STORE_DIR, f"{pdf_id}.faiss")
+        print(f"CHECKING PATH: {vector_store_path} EXISTS: {os.path.exists(vector_store_path)}")  # ADD THIS
         if not os.path.exists(vector_store_path):
             raise FileNotFoundError(f"Vector store not found for PDF ID: {pdf_id}.")
         store = FAISS.load_local(vector_store_path, embeddings, allow_dangerous_deserialization=True)
@@ -58,8 +60,12 @@ def fix_quiz_json(data: Dict) -> Dict:
     if all([mcqs, saqs, laqs]): return {'mcqs':mcqs,'saqs':saqs,'laqs':laqs}
     raise ValueError("LLM output is in an unknown format and could not be corrected.")
 
+
+
 async def generate_quiz_from_pdfs(request: QuizGenerationRequest) -> GeneratedQuiz:
+    print(f"QUIZ REQUEST RECEIVED: {request.pdfIds}")
     context = get_context_from_pdfs(request.pdfIds)
+    print(f"CONTEXT LOADED: {len(context)} chars")
     parser = JsonOutputParser(pydantic_object=GeneratedQuiz)
     prompt = PromptTemplate(
         template="""You are an expert quiz creator. Based *only* on the provided context, generate a quiz.
@@ -77,8 +83,8 @@ Generate a quiz with: {numMCQs} MCQs, {numSAQs} SAQs, {numLAQs} LAQs.""",
             "numSAQs": request.numSAQs, "numLAQs": request.numLAQs
         })
         return GeneratedQuiz(**fix_quiz_json(raw_result))
-    except (ValueError, ValidationError) as e:
-        print(f"Error parsing/validating LLM output: {e}")
+    except Exception as e:
+        print(f"FULL ERROR: {type(e).__name__}: {e}")
         raise ValueError("Failed to generate a valid quiz from the AI service.")
 
 async def grade_quiz_submission(request: QuizGradingRequest) -> QuizGradingResponse:
